@@ -15,18 +15,20 @@ export const generateTTS = (text: string, voice: string) => {
         fs.mkdirSync(audioPath)
     }
 
-    const f_name = `${Date.now()}.mp3`
+    const ts = Date.now()
+    const f_name = `${ts}.mp3`
+    const s_name = `${ts}.srt`
 
     if (!innerVoices.includes(voice)) {
         throw new Error("Invalid voice")
     }
-
+    //const proxy_arg = process.env.http_proxy ? `--proxy ${process.env.http_proxy}` : " "
     execSync(
-        `edge-tts --voice ${voice} --text "${text}" --write-media ${path.join(
+        `edge-tts --voice ${voice} --text "${text}"  --write-subtitles ${path.join(audioPath, s_name)} --write-media ${path.join(
             audioPath,
             f_name
         )}`
     )
 
-    return `/a/${f_name}`
+    return [`/a/${f_name}`, `/a/${s_name}`]
 }

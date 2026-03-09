@@ -1,6 +1,7 @@
 import Koa from "koa"
 import Static from "koa-static"
 import Router from "koa-router"
+import bodyParser from "koa-bodyparser"
 
 import fs from "fs"
 import path from "path"
@@ -46,6 +47,42 @@ router.get("/voices", async (ctx) => {
     }
 })
 
+// tts post接口
+router.post("/post_tts", (ctx) => {
+    const { text, voice } = ctx.request.body as { text?: string; voice?: string };
+    if (!text || !voice) {
+        ctx.status = 500
+        ctx.body = {
+            error: "text and voice are required",
+        }
+        return
+    }
+
+    if (Array.isArray(text) || Array.isArray(voice)) {
+        ctx.status = 500
+        ctx.body = {
+            error: "text and voice should not be array",
+        }
+        return
+    }
+
+    try {
+        cleanVoices()
+        const result = generateTTS(decodeURIComponent(text), voice)
+        ctx.body = {
+            url: result[0],
+            srt_url: result[1]
+        }
+    } catch (e: any) {
+        ctx.status = 500
+        ctx.body = {
+            error: e.message,
+        }
+    }
+})
+
+
+
 // tts 接口
 router.get("/tts", (ctx) => {
     // 返回 link
@@ -70,7 +107,8 @@ router.get("/tts", (ctx) => {
         cleanVoices()
         const result = generateTTS(decodeURIComponent(text), voice)
         ctx.body = {
-            url: result,
+            url: result[0],
+            srt_url: result[1]
         }
     } catch (e: any) {
         ctx.status = 500
@@ -118,8 +156,9 @@ router.get("/clean", (ctx) => {
     }
 })
 
+app.use(bodyParser());
 app.use(router.routes())
 
 app.listen(8088, () => {
-    console.log("Server is running on port 8080")
+    console.log("Server is running on port 8088")
 })

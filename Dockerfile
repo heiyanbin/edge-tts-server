@@ -11,7 +11,7 @@ RUN yarn install
 RUN yarn build
 
 # 创建虚拟环境安装依赖
-RUN pip3 install edge-tts --break-system-packages
+RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ --break-system-packages edge-tts
 
 # 声明端口
 EXPOSE 8088
